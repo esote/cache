@@ -1,0 +1,10 @@
+Package cache implements many kinds of caching policies.
+
+Cache replacement algorithms currently implemented:
+
+	FIFO: first-in first-out
+	LFU: least-frequently used
+	LIFO: last-in first-out
+	LRU: least-recently used
+	MRU: most-recently used
+	RR: random-replacement
