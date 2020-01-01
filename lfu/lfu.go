@@ -1,3 +1,4 @@
+// Package lfu provides a least-frequently-used cache.
 package lfu
 
 import (

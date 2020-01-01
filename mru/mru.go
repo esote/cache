@@ -1,3 +1,4 @@
+// Package mru provides a most-recently-used cache.
 package mru
 
 import (

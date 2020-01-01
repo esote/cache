@@ -1,3 +1,4 @@
+// Package fifo provides a first-in first-out cache.
 package fifo
 
 import "container/list"

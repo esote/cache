@@ -1,3 +1,4 @@
+// Package lru provides a least-recently-used cache.
 package lru
 
 import (

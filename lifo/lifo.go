@@ -1,3 +1,4 @@
+// Package lifo provides a last-in first-out cache.
 package lifo
 
 import "container/list"

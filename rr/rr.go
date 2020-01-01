@@ -1,3 +1,4 @@
+// Package rr provides a random-replacement cache.
 package rr
 
 import (
