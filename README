@@ -8,3 +8,6 @@ Cache replacement algorithms currently implemented:
 	LRU: least-recently used
 	MRU: most-recently used
 	RR: random-replacement
+
+They all operate in constant time, with the exception of the Dump function which
+has a runtime of O(n) where n is the size of the cache.

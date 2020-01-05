@@ -6,13 +6,6 @@ import (
 	"math"
 	"math/rand"
 	"testing"
-
-	"github.com/esote/cache/fifo"
-	"github.com/esote/cache/lfu"
-	"github.com/esote/cache/lifo"
-	"github.com/esote/cache/lru"
-	"github.com/esote/cache/mru"
-	"github.com/esote/cache/rr"
 )
 
 type cache struct {
@@ -22,13 +15,81 @@ type cache struct {
 
 func freshCaches(capacity int) []cache {
 	return []cache{
-		{"FIFO", fifo.New(capacity)},
-		{"LFU", lfu.New(capacity)},
-		{"LIFO", lifo.New(capacity)},
-		{"LRU", lru.New(capacity)},
-		{"MRU", mru.New(capacity)},
-		{"RR", rr.New(capacity, nil)},
+		{"FIFO", NewFIFO(capacity)},
+		{"LFU", NewLFU(capacity)},
+		{"LIFO", NewLIFO(capacity)},
+		{"LRU", NewLRU(capacity)},
+		{"MRU", NewMRU(capacity)},
+		{"RR", NewRR(capacity, nil)},
 	}
+}
+
+func TestCoherent(t *testing.T) {
+	caches := freshCaches(3)
+
+	for _, c := range caches {
+		if err := testCoherent(c.cache); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func testCoherent(c Cache) error {
+	if c.Add(1, 1) {
+		return errors.New("add 1->1")
+	}
+
+	if value, hit := c.Get(1); !hit || value != 1 {
+		return fmt.Errorf("get 1, got %d", value)
+	}
+
+	if c.Add(2, 2) {
+		return errors.New("add 2->2")
+	}
+
+	if c.Add(3, 3) {
+		return errors.New("add 3->3")
+	}
+
+	if value, hit := c.Get(3); !hit || value != 3 {
+		return fmt.Errorf("get 3, got %d", value)
+	}
+
+	if !c.Delete(2) {
+		return errors.New("delete 3")
+	}
+
+	if value, hit := c.Get(2); hit {
+		return fmt.Errorf("get 2, got %d", value)
+	}
+
+	if !c.Set(1, "A") {
+		return errors.New("set 1->A")
+	}
+
+	if value, hit := c.Get(1); !hit || value != "A" {
+		return fmt.Errorf("get 1, got %d", value)
+	}
+
+	if !c.Delete(1) {
+		return errors.New("delete 1")
+	}
+
+	if l := c.Len(); l != 1 {
+		return fmt.Errorf("len %d", l)
+	}
+
+	if !c.Add(3, "B") {
+		return errors.New("add 3->B")
+	}
+
+	c.Clear()
+
+	if l := c.Len(); l != 0 {
+		return errors.New("len")
+	}
+
+	return nil
 }
 
 func BenchmarkAddFrequencies(b *testing.B) {
@@ -132,72 +193,4 @@ func zipfBuf(buf []uint16) {
 	for i := range buf {
 		buf[i] = uint16(zipf.Uint64())
 	}
-}
-
-func TestCoherent(t *testing.T) {
-	caches := freshCaches(3)
-
-	for _, c := range caches {
-		if err := testCoherent(c.cache); err != nil {
-			t.Fatal(err)
-		}
-	}
-}
-
-func testCoherent(c Cache) error {
-	if c.Add(1, 1) {
-		return errors.New("add 1->1")
-	}
-
-	if value, hit := c.Get(1); !hit || value != 1 {
-		return fmt.Errorf("get 1, got %d", value)
-	}
-
-	if c.Add(2, 2) {
-		return errors.New("add 2->2")
-	}
-
-	if c.Add(3, 3) {
-		return errors.New("add 3->3")
-	}
-
-	if value, hit := c.Get(3); !hit || value != 3 {
-		return fmt.Errorf("get 3, got %d", value)
-	}
-
-	if !c.Delete(2) {
-		return errors.New("delete 3")
-	}
-
-	if value, hit := c.Get(2); hit {
-		return fmt.Errorf("get 2, got %d", value)
-	}
-
-	if !c.Set(1, "A") {
-		return errors.New("set 1->A")
-	}
-
-	if value, hit := c.Get(1); !hit || value != "A" {
-		return fmt.Errorf("get 1, got %d", value)
-	}
-
-	if !c.Delete(1) {
-		return errors.New("delete 1")
-	}
-
-	if l := c.Len(); l != 1 {
-		return fmt.Errorf("len %d", l)
-	}
-
-	if !c.Add(3, "B") {
-		return errors.New("add 3->B")
-	}
-
-	c.Clear()
-
-	if l := c.Len(); l != 0 {
-		return errors.New("len")
-	}
-
-	return nil
 }
