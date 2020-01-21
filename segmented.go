@@ -5,16 +5,17 @@ type segmented struct {
 	evictions []chan Pair
 }
 
-// NewSegmented constructs a new segmented cache. Arguments specified first are
-// designated "lower" caches and hold lower-priority items. The eviction channel
-// of the input caches will be replaced. While this segmented cache is unclosed,
-// using the input caches is undefined behavior. This function panics if no
-// caches are specified.
+// NewSegmented constructs a new segmented cache. The eviction channel of the
+// input caches will be replaced. While this segmented cache is unclosed, using
+// the input caches is undefined behavior. This function panics if no caches are
+// specified.
 //
-// Items are added to the lowest internal cache. When items are accessed, they
-// are moved to the next higher cache. When an internal cache becomes full,
-// evicted values move to the next lower cache, until being completely evicted
-// and passed through the registered eviction channel of the segmented cache.
+// Arguments specified first are designated "lower" caches and hold
+// lower-priority items. Items are added to the lowest internal cache. When
+// items are accessed, they are moved to the next higher cache. When an internal
+// cache becomes full, evicted values move to the next lower cache, until being
+// completely evicted and passed through the registered eviction channel of the
+// segmented cache.
 //
 // Internal caches are checked in reverse order to give higher caches the fast
 // path.
@@ -106,7 +107,6 @@ func (s *segmented) Close() error {
 		s.caches[i].Eviction(nil, true)
 		close(s.evictions[i-1])
 	}
-	// Avoid memory leaks
 	s.caches = nil
 	s.evictions = nil
 	return nil

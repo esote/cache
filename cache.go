@@ -31,7 +31,8 @@ type Cache interface {
 	// Delete value from the cache. Returns whether the delete hit.
 	Delete(key interface{}) (hit bool)
 
-	// Clear all values in the cache.
+	// Clear all values in the cache. Clearing does not invalidate future
+	// operations.
 	Clear()
 
 	// Len returns the number of items in the cache.
@@ -51,8 +52,8 @@ type Pair struct {
 	Key, Value interface{}
 }
 
-// Closer represents a cache should be closed when it will no longer be
-// used.
+// Closer represents a cache should be closed when they will no longer be used.
+// Unlike clearing a cache, closing a cache invalidates future operations.
 type Closer interface {
 	Cache
 	io.Closer
